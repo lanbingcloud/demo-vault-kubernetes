@@ -1,0 +1,17 @@
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: es
+  namespace: demo
+spec:
+  refreshInterval: "15s"
+  secretStoreRef:
+    name: secretstore
+    kind: SecretStore
+  target:
+    name: es
+  data:
+  - secretKey: lookatme
+    remoteRef:
+      key: vault/es
+      property: key

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  namespace: demo
+  labels:
+    app: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+      annotations:
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-pre-populate-only: "true"
+        vault.hashicorp.com/role: 'demo'
+        vault.hashicorp.com/agent-inject-secret-lookatme: "demo/data/vault/inject"
+        vault.hashicorp.com/secret-volume-path-lookatme: "/vault/inject"
+        vault.hashicorp.com/agent-inject-template-lookatme: |
+          {{- with secret "demo/data/vault/inject" -}}
+          {{ .Data.data.key }}
+          {{- end -}}
+    spec:
+      containers:
+      - image: centos
+        imagePullPolicy: Always
+        name: demo
+        command: ["/bin/sh", "-c"]
+        args: ["tail -f /dev/null"]
+        volumeMounts:
+        - mountPath: /vault/es/
+          name: es
+      restartPolicy: Always
+      volumes:
+      - name: es
+        secret:
+          secretName: es
